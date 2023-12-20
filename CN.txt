@@ -1,0 +1,910 @@
+<<<<------- DVR -------->>>>
+
+
+#include<stdio.h>
+#include<limits.h>
+struct node
+{
+	int dist[20];
+	int from[20];
+}rt[10];
+int main()
+{
+	int costmat[20][20];
+	int x = INT_MAX;
+	int n,i,j,k,count=1;
+	printf("Enter no.of nodes:\n");
+	scanf("%d",&n);
+	printf("Enter cost matrix:\n");
+	for(i=0;i<n;i++)
+	{
+		for(j=0;j<n;j++)
+		{
+			scanf("%d",&costmat[i][j]);
+
+			costmat[i][i]=0;
+			rt[i].dist[j]=costmat[i][j];
+			rt[i].from[j]=j;
+		}
+	}
+	do
+	{
+		for(i=0;i<n;i++)
+		{
+			for(j=0;j<n;j++)
+			{
+				for(k=0;k<n;k++)
+				{
+					if(rt[i].dist[j]>costmat[i][k]+rt[k].dist[j])
+					{
+						rt[i].dist[j]=rt[i].dist[k]+rt[k].dist[j];
+						rt[i].from[j]=k;
+					}
+				
+				}
+			}
+		}
+		count++;
+	}while(count<n);
+	for(i=0;i<n;i++)
+	{
+		printf("Distance Routing table for router %c:\n",i+65);
+		for(j=0;j<n;j++)
+		{
+			printf("Node %d via %d,Distance:%d\n",j,rt[i].from[j],rt[i].dist[j]);
+		}
+	}
+}
+
+
+
+
+<<<<------- CRC -------->>>>
+
+#include<iostream>
+#include<math.h>
+#include<cstring>
+using namespace std;
+
+char gen[20],mess[20];
+int codelen;
+char exor(char a , char b){
+    if (a==b){
+        return '0';
+    }
+    else{
+        return '1';
+    }
+}
+
+void crc(char mess[] , char gen[]){
+    int messlen = strlen(mess);
+    int genlen = strlen(gen);
+    for(int i=0;i<genlen-1;i++){
+        mess[messlen+i] = '0';
+    }
+    mess[messlen+genlen-1]='\0';
+    codelen = messlen+genlen-1;
+    char temp[20],rem[20];
+    for(int i=0;i<genlen;i++){
+        rem[i] = mess[i];
+    }
+    for(int j=genlen;j<=codelen ; j++){
+        for(int i=0;i<genlen;i++){
+            temp[i] = rem[i];
+        }
+        if(rem[0]=='0'){
+            for(int i =0 ;i<genlen-1;i++){
+                rem[i] = temp[i+1];
+            }
+        }
+        else{
+            for(int i =0 ;i<genlen-1;i++){
+                rem[i] = exor(temp[i+1],gen[i+1]); # we ignore first one as it has to become 0 or else no new bit will brought down
+        }
+        }
+        if(j!=codelen){
+            rem[genlen-1]=mess[j];
+        }
+        else{
+            rem[genlen-1]='\0';
+        }
+        }
+    for(int i=0;i<genlen-1;i++){
+        mess[messlen+i]=rem[i];
+    }
+    mess[codelen]='\0';
+    cout << "CRC = "<<rem << "\n messword = "<<mess;
+    }
+    
+    
+    void receiver(char mess[] , char gen[]){
+        int messlen = strlen(mess);
+        int genlen = strlen(gen);
+        codelen = strlen(mess);
+        char temp[20] , rem[20];
+        for(int i=0;i<genlen;i++){
+        rem[i] = mess[i];
+        }
+        for(int j=genlen;j<=codelen ; j++){
+            for(int i=0;i<genlen;i++){
+                temp[i] = rem[i];
+            }
+            if(rem[0]=='0'){
+                for(int i =0 ;i<genlen-1;i++){
+                    rem[i] = temp[i+1];
+                }
+            }
+            else{
+                for(int i =0 ;i<genlen-1;i++){
+                    rem[i] = exor(temp[i+1],gen[i+1]);
+            }
+            }
+            if(j!=codelen){
+                rem[genlen-1]=mess[j];
+            }
+            else{
+                rem[genlen-1]='\0';
+            }
+        }
+        int flag = 0;
+        for(int i =0 ; i<genlen-1;i++){
+            if(rem[i]!='0'){
+                flag++;
+            }
+        }
+        if (flag==0){
+            cout<<"\n No Error\n";
+        }
+        else{
+            cout<<"\n Error Found\n";
+        }
+            
+    }
+    
+    
+    int main(){
+        cout<<"Enter the mess:";
+        cin>>mess;
+        cout<<"Enter the gen:";
+        cin>>gen;
+        crc(mess,gen);
+        receiver(mess,gen);
+        return 0;
+    }
+
+
+
+<<<<-----Dijkstra------>>>>
+
+#include <limits.h>
+#include <stdbool.h>
+#include <stdio.h>
+
+#define V 5
+
+int minDistance(int dist[], bool sptSet[])
+{
+	int min = INT_MAX, min_index;
+
+	for (int v = 0; v < V; v++)
+		if (sptSet[v] == false && dist[v] <= min)
+			min = dist[v], min_index = v;
+
+	return min_index;
+}
+
+void printSolution(int dist[])
+{
+	printf("Vertex \t\t Distance from Source\n");
+	for (int i = 0; i < V; i++)
+		printf("%d \t\t\t\t %d\n", i, dist[i]);
+}
+
+void dijkstra(int graph[V][V], int src)
+{
+	int dist[V];
+
+	bool sptSet[V]; 
+	for (int i = 0; i < V; i++)
+		dist[i] = INT_MAX, sptSet[i] = false;
+	dist[src] = 0;
+
+	for (int count = 0; count < V - 1; count++) {
+		int u = minDistance(dist, sptSet);
+		sptSet[u] = true;
+		for (int v = 0; v < V; v++)
+			if (!sptSet[v] && graph[u][v]
+				&& dist[u] != INT_MAX
+				&& dist[u] + graph[u][v] < dist[v])
+				dist[v] = dist[u] + graph[u][v];
+	}
+	printSolution(dist);
+}
+
+int main()
+{
+	int graph[V][V] = { {0,2,0,6,0},
+						{2,0,1,0,0},
+						{0,1,0,2,4},
+						{6,0,2,0,1},
+						{0,0,4,1,0}};
+	dijkstra(graph, 0);
+
+	return 0;
+}
+
+
+
+
+<<<<-----Dijkstra User Input------>>>>
+
+
+
+#include <limits.h>
+#include <stdbool.h>
+#include <stdio.h>
+
+int minDistance(int dist[], bool sptSet[],int V)
+{
+	int min = INT_MAX, min_index;
+
+	for (int v = 0; v < V; v++)
+		if (sptSet[v] == false && dist[v] <= min)
+			min = dist[v], min_index = v;
+
+	return min_index;
+}
+
+void printSolution(int dist[],int V)
+{
+	printf("Vertex \t\t Distance from Source\n");
+	for (int i = 0; i < V; i++)
+		printf("%d \t\t\t\t %d\n", i, dist[i]);
+}
+
+void dijkstra(int graph[100][100], int src,int V)
+{
+	int dist[V];
+
+	bool sptSet[V]; 
+	for (int i = 0; i < V; i++)
+		dist[i] = INT_MAX, sptSet[i] = false;
+	dist[src] = 0;
+
+	for (int count = 0; count < V - 1; count++) {
+		int u = minDistance(dist, sptSet,V);
+		sptSet[u] = true;
+		for (int v = 0; v < V; v++)
+			if (!sptSet[v] && graph[u][v]
+				&& dist[u] != INT_MAX
+				&& dist[u] + graph[u][v] < dist[v])
+				dist[v] = dist[u] + graph[u][v];
+	}
+	printSolution(dist,V);
+}
+
+
+int main()
+{
+	int graph[100][100],V;
+	printf("Enter the NO of vertices :");
+	scanf("%d",&V);
+	printf("Enter the graph: \n");
+	for(int i=0;i<V;i++){
+	    for(int j=0;j<V;j++){
+	        scanf("%d",&graph[i][j]);
+	    }
+	}
+	dijkstra(graph,0,V);
+
+	return 0;
+}
+
+
+
+
+
+
+<<<<-------LBA With R as base of comparision------->>>>
+
+
+
+#include <stdio.h>
+
+int main()
+{
+    int N,B,R;
+    int loss,trans,stat,remain,extra;
+    int choice = 0;
+    printf("Bucket Capacity:");
+    scanf("%d",&B);
+    printf("Rate of Leak: ");
+    scanf("%d",&R);
+    stat = 0;
+    do{
+        printf("Number of packets: ");
+        scanf("%d",&N);
+        if(N>=R){
+            remain = N-R;
+            trans = R;
+            loss = remain - (B- stat);
+            stat += remain;
+            if(loss>0)  stat-=loss;
+            else loss = 0;
+        }
+        else{
+            extra = R - N;
+            loss = 0;
+            if (stat < extra){
+                trans = stat + N;
+                stat = 0;
+            }
+            else{
+                trans = extra + N;
+                stat -= extra;
+            }
+        }
+        printf("packets lost:%d\n packets Transmitted:%d\n Bucket stat:%d",loss,trans,stat);
+        printf("\nTerminate: (1-Yes , 0 - No)");
+        scanf("%d",&choice);
+    }
+    while (choice==0);
+    return 0;
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+<<<<-------LBA with B as base of comparision------->>>>
+
+#include <stdio.h>
+
+int main()
+{
+    int N,B,R;
+    int loss,trans,stat;
+    int choice = 0;
+    printf("Bucket Capacity:");
+    scanf("%d",&B);
+    printf("Rate of Transmission: ");
+    scanf("%d",&R);
+    stat = 0;
+    do{
+        printf("Number of packets: ");
+        scanf("%d",&N);
+        N+=stat;
+        if(N<=B){
+            if(N<=R){
+                loss = 0;
+                trans = N;
+                stat = 0;
+            }
+            else{
+                loss=0;
+                trans = R;
+                stat = N-R;
+            }
+        }
+        else{
+            loss = N-B;
+            trans = R;
+            stat = N-loss - R;
+        }
+        printf("packets lost:%d\n packets Transmitted:%d\n Bucket stat:%d",loss,trans,stat);
+        printf("\nTerminate: (1-Yes , 0 - No)");
+        scanf("%d",&choice);
+    }
+    while (choice==0);
+    return 0;
+
+    return 0;
+}
+
+
+
+<<<<-------BYTE STUFFING----->>>>
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+int main(){
+	char frame[50],str[50],destuff[50];
+	char flag='f';
+	char esc='e';
+	int i,k=0;
+	frame[k++]=flag;
+	printf("Enter the string: ");
+	scanf("%s",str);
+	for(i=0;i<strlen(str);i++){
+		if(str[i]!=flag && str[i]!=esc){
+			frame[k++]=str[i];
+		}
+		else{
+			frame[k++]=esc;
+			frame[k++]=str[i];
+		}
+	}
+	frame[k++]=flag;
+	k=0;
+	printf("after stuffing: %s",frame);
+	for(i=1;i<strlen(frame)-1;i++){
+		if(frame[i]==esc){
+			i++;
+		}
+		destuff[k++]=frame[i];
+	}
+	printf("\n\n");
+	printf("After destufffing: %s",destuff);
+	
+}
+
+
+
+<<<< ------ BIT STUFFING ---->>>>
+
+
+#include<stdio.h>
+#include<string.h>
+
+int main(){
+    int bits[100];
+    int bl,i,k,j=0;
+    int stuff[100],destuff[100];
+    int c;
+    printf("Input # of bits:");
+    scanf("%d",&bl);
+    printf("Input bits: ");
+    for(i=0;i<bl;i++){
+        scanf("%d",&bits[i]);
+    }
+    for(i=0;i<bl;i++){
+        if(bits[i]==1){
+        	c=1;
+        	stuff[j++]=bits[i];
+        	for(k=i+1;bits[i]==1 && k< bl&& c<5;k++){
+        		stuff[j++]=bits[k];
+        		c++;
+        		if(c==5){
+        			stuff[j++]=0;
+				}
+				i=k;
+			}
+		}
+		else{
+			stuff[j++]=bits[i];
+		}
+    }
+    i=0;
+    printf("Stuffed data: ");
+    while(i<j){
+        printf("%d",stuff[i]);
+        i++;
+    }
+    printf("\nDestuffed data: ");
+    
+    k=0;
+    int h;
+    
+    for(i=0;i<j;i++){
+        c=1;
+    	if(stuff[i]==1){
+    		destuff[k++]=stuff[i];
+    		for(h=i+1;stuff[h]==1 && h<bl && c<5;h++){
+    			destuff[k++]=stuff[h];
+    			c++;
+    			if(c==5){
+    				h++;
+				}
+				i=h;
+			}
+		}
+		else{
+			destuff[k++]=stuff[i];
+		}
+    }
+    i=0;
+    while(i<k){
+        printf("%d",destuff[i]);
+        i++;
+    }
+
+}
+
+
+<<<<----1-BIT SW------->>>>
+
+#include<stdio.h>
+#include<time.h>
+#include<stdlib.h>
+
+typedef struct{
+    int no;
+    int ack;
+}Packet;
+
+int main(){
+    int i,N;
+    printf("1- Bit sliding Window\n");
+    printf("Number of packets to be Transmitted\n");
+    scanf("%d",&N);
+    Packet pkt[N];
+    for(i=0;i<N;i++){
+        pkt[i].no = i+1;
+        pkt[i].ack=0;
+    }
+    srand(time(NULL));
+    int D =(N>5)?int(N/2):N-2;
+    int l = rand()%D;
+    for(int k=0;k<l;k++){
+        int x = rand()%N;
+        pkt[x].no=-1;
+        pkt[x].ack=0;
+    }
+    i=0;
+    while(i<N){
+	printf("Transmitting Packet %d \n",pkt[i].no);
+        if(pkt[i].no==-1 && pkt[i].ack==0){
+            pkt[i].no = i+1;
+            pkt[i].ack = pkt[i-1].no;
+            printf("Re-Transmit Packet %d\n",pkt[i].no);
+            continue;
+        }
+        
+        pkt[i].ack = (i>0)?pkt[i-1].no:0;
+        i++;
+    }
+    return 0;
+}
+
+
+<<<<----GO BACK N----->>>>>
+
+
+#include<iostream>
+#include<ctime>
+#include<cstdlib>
+using namespace std;
+int main(){
+    int noofframes = 6, N=4;
+    int count = 0;
+    srand(time(NULL));
+    int i =1;
+    while (i<noofframes){
+        int x= 0 ;
+        for(int j=i;j<i+N&&j<=noofframes;j++){
+            cout<<"Sending the frame "<<j<<endl;
+            count++;
+        }
+        for(int j=i;j<i+N&&j<=noofframes;j++){
+            int flag = rand()%2;
+            if (!flag){
+                cout<<"\n Acknowledgement for window received whose first packet is "<<j;
+                x++;
+            }
+            else{
+                cout<<"\n Data packet in cumulative Acknowledgement not received whose first packet is "<<j;
+                cout<<" Retransmitting the whole window";
+                break;
+            }
+        }
+        cout<<endl;
+        i+=x;
+    }
+    cout<<"\n total number of transmissions"<<count;
+    return 0;
+}
+
+
+
+<<<<----GO BACK N----->>>>>
+
+#include<stdio.h>
+#include<time.h>
+#include<stdlib.h>
+
+typedef struct{
+    int no;
+    int ack;
+}Packet;
+
+int main(){
+    int i,j,N,M,n,st=0,p=0;
+    printf("Go-Back N\n");
+    printf("Number of Packets to be transmitted: ");
+    scanf("%d",&N);
+    Packet pkt[N];
+    for(i=0;i<N;i++){
+        pkt[i].no=i+1;
+        pkt[i].ack=0;
+    }
+    srand(time(NULL));
+    int x=rand()%N;
+    pkt[x].no=-1;
+    pkt[x].ack=0;
+    printf("Window Size: ");
+    scanf("%d",&M);
+    i=0;
+    j=i+M-1;
+    while(i<N && j<N){
+        int k=i;
+        printf("\nWindow %d\n",++p);
+        while(k<=j){
+            printf("%d ",pkt[k].no);
+            if(pkt[k].no==-1 && pkt[k].ack==0){
+                pkt[k].no=k+1;
+                n=k;
+                st=1;
+                k++;
+                continue;
+            }
+            pkt[k].ack=(k>=M)?pkt[k-M].no:0;
+            k++;
+        }
+        if(st==1){
+            printf("\nRe-Transmission from Frame %d",n+1);
+        }
+        i=(st==1)?n:i+M;
+        st=0;
+        j=((i+M-1)>N-1)?N-1:(i+M-1);
+    }
+    return 0;
+}
+
+
+
+<<<<----MY GO BACK N----->>>>>
+
+
+
+#include<stdio.h>
+#include<time.h>
+#include<stdlib.h>
+
+typedef struct{
+    int no;
+    int ack;
+}Packet;
+
+int main(){
+    int i,j,N,M,st=0,p=0;
+    printf("Go-Back N\n");
+    printf("Number of Packets to be transmitted: \n");
+    scanf("%d",&N);
+    Packet pkt[N];
+    for(i=0;i<N;i++){
+        pkt[i].no = i+1;
+        pkt[i].ack=0;
+    }
+    srand(time(NULL));
+    int D = N-2;
+    int l = rand()%D;
+    for(int z=0;z<l;z++){
+        int x = rand()%N;
+        pkt[x].no = -1;
+        pkt[x].ack = 0;
+    }
+    printf("Window Size: ");
+    scanf("%d",&M);
+    i=0;
+    j=i+M-1;
+    while(i<N && j<N){
+        int k= i;
+        int n = -1;
+        printf("\n Window %d\n",++p);
+        while(k<=j){
+            printf(" %d ",pkt[k].no);
+            if(pkt[k].no==-1 && pkt[k].ack==0){
+                pkt[k].no=k+1;
+                if (n==-1){n = k;}
+                st=1;
+                k++;
+                continue;
+            }
+            pkt[k].ack = (k>=M)?pkt[k-M].no:0;
+            k++;
+        }
+        if(st==1){
+            printf("\nRe-Transmission from Frame %d\n",n+1);
+        }
+        i=(st==1)?n:i+M;
+        st=0;
+        j=((i+M-1)>N-1)?N-1:(i+M-1);
+    }
+    return 0;
+}
+
+<<<<----Selective Repeat---->>>>
+
+
+
+#include<stdio.h>
+#include<time.h>
+#include<stdlib.h>
+
+typedef struct{
+    int no;
+    int ack;
+}Packet;
+
+int main(){
+    int i,j,N,M,n,st=0,p=0;
+    printf("Selective Repeat\n");
+    printf("Number of Packets to be transmitted: ");
+    scanf("%d",&N);
+    Packet pkt[N];
+    for(i=0;i<N;i++){
+        pkt[i].no=i+1;
+        pkt[i].ack=0;
+    }
+    srand(time(NULL));
+    int x=rand()%N;
+    pkt[x].no=-1;
+    pkt[x].ack=-1;
+    printf("Window Size: ");
+    scanf("%d",&M);
+    i=0;
+    j=i+M-1;
+    while(i<=N or st == 1){
+        int k=i;
+        printf("\nWindow %d\n",++p);
+        if(st==1){
+            printf("%d ",pkt[n].no);
+            i--;
+            if (j!=N)
+                j--;
+            st=0;
+        }
+        while(k<=j){
+            printf("%d ",pkt[k].no);
+            if(pkt[k].no==-1 && pkt[k].ack==-1){
+                pkt[k].no=k+1;
+                n=k;
+                st=1;
+                k++;
+                continue;
+            }
+            pkt[k].ack=(k>=M)?pkt[k-M].no:0;
+            k++;
+        }
+        if(st==1){
+            printf("\nRe-Transmission of Frame %d",n+1);
+        }
+        i=i+M;
+        j=((i+M-1)>N-1)?N-1:(i+M-1);
+    }
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+<<<<----Selective Repeat---->>>>
+
+#include <iostream>
+int tmp1,tmp2,tmp3,tmp4,tmp5,i,windowsize=4,noofpacket,morepacket;
+using namespace std;
+
+int main()
+{
+    char c;
+    int receiver(int);
+    int simulate(int);
+    int negback(int);
+    for(int i=0;i<10;i++){
+        rand();
+        noofpacket = rand()%10;
+    }
+    cout<<"No of frames is: "<<noofpacket;
+    morepacket = noofpacket;
+    while(morepacket>=0){
+        tmp1=simulate(windowsize);
+        windowsize-=tmp1;
+        tmp4+=tmp1;
+        if(tmp4>noofpacket)
+            tmp4 = noofpacket;
+        for(i=noofpacket-morepacket ; i<=tmp4;i++){
+            cout<<"\n Sedning Frame"<<i;
+        }
+        tmp2 = receiver(tmp1);
+        tmp3+=tmp2;
+        if(tmp3>noofpacket)
+            tmp3=noofpacket;
+        tmp2 = negback(tmp1);
+        tmp5+=tmp2;
+        if(tmp5!=0){
+            cout<<"\n No ack for the frame"<<tmp5;
+            cout<<"\n Retransmitting frame"<<tmp5;
+        }
+        morepacket-=tmp1;
+        if (windowsize<=0)
+            windowsize = 4;
+            
+    }
+    cout<<"selective repeat protocol end.";
+
+    return 0;
+}
+
+int receiver(int tmp1){
+    int i;
+    for(i=0;i<5;i++){
+        rand();
+        i = rand()%tmp1;
+        return i;
+    }
+}
+
+int negback(int tmp1){
+    int i;
+    for(i=0;i<5;i++){
+        rand();
+        i = rand()%tmp1;
+        return i;
+    }
+}
+
+
+int simulate(int windowsize){
+    int tmp1,i;
+    for(i=0;i<5;i++)
+        tmp1=rand();
+    if(tmp1==0)
+        tmp1=simulate(windowsize);
+    i=tmp1%windowsize;
+    if (i==0)
+        return windowsize;
+
+    else
+        return tmp1%windowsize;
+    
+}
+
+
+
+
+
+<<<<----IP FRAGMENTATION---->>>>
+
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+    int pkt_size, header_size, MTU, offset, f_no = 1, sent = 0;
+    printf("Enter packet size: ");
+    scanf("%d", &pkt_size);
+    printf("Enter header size: ");
+    scanf("%d", &header_size);
+    printf("Enter MTU: ");
+    scanf("%d", &MTU);
+    pkt_size -= header_size;
+    MTU -= header_size;
+
+    int n = pkt_size / MTU;
+    n = pkt_size % MTU != 0 ? n + 1 : n;
+    printf("Number of fragments: %d\n", n);
+
+    for (f_no = 1; f_no < n; f_no++)
+    {
+        printf("Fragment number: %d, Packet Size: %d, Offset: %d, MF: %d\n", f_no, MTU, sent, 1);
+        sent += MTU;
+    }
+    printf("Fragment number: %d, Packet Size: %d, Offset: %d, MF: %d", f_no, pkt_size - sent, sent, 0);
+    return 0;
+}
+
